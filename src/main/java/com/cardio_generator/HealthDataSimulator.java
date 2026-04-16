@@ -33,7 +33,7 @@ import com.cardio_generator.outputs.WebSocketOutputStrategy;
  * </p>
  * * <p>The simulator follows the Strategy Pattern for data output, allowing metrics to be directed 
  * to the console, local files, or network sockets (TCP/WebSocket) based on runtime arguments.</p>
- * * @author [Your Name/Organization]
+ * * @author [Kolja Nitschke]
  * @version 1.0
  */
 
