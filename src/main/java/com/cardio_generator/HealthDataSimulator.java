@@ -23,6 +23,20 @@ import com.cardio_generator.outputs.OutputStrategy;
 import com.cardio_generator.outputs.TcpOutputStrategy;
 import com.cardio_generator.outputs.WebSocketOutputStrategy;
 
+/**
+ * The {@code HealthDataSimulator} class serves as the central engine for the clinical data simulation system.
+ * <p>
+ * This class handles the initialization of patient identifiers, parsing of command-line configurations, 
+ * and the scheduling of periodic tasks to generate synthetic health data. It utilizes a 
+ * {@link java.util.concurrent.ScheduledExecutorService} to manage concurrent data generation across 
+ * various metrics like ECG, blood pressure, and oxygen saturation.
+ * </p>
+ * * <p>The simulator follows the Strategy Pattern for data output, allowing metrics to be directed 
+ * to the console, local files, or network sockets (TCP/WebSocket) based on runtime arguments.</p>
+ * * @author [Your Name/Organization]
+ * @version 1.0
+ */
+
 public class HealthDataSimulator {
 
     private static int patientCount = 50; // Default number of patients
@@ -30,6 +44,8 @@ public class HealthDataSimulator {
     private static OutputStrategy outputStrategy = new ConsoleOutputStrategy(); // Default output strategy
     private static final Random random = new Random();
 
+
+    
     public static void main(String[] args) throws IOException {
 
         parseArguments(args);
