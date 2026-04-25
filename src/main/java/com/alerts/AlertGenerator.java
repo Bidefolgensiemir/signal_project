@@ -1,7 +1,11 @@
 package com.alerts;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.data_management.DataStorage;
 import com.data_management.Patient;
+import com.data_management.PatientRecord;
 
 /**
  * The {@code AlertGenerator} class is responsible for monitoring patient data
@@ -35,7 +39,53 @@ public class AlertGenerator {
      * @param patient the patient data to evaluate for alert conditions
      */
     public void evaluateData(Patient patient) {
-        // Implementation goes here
+        long currentTime = System.currentTimeMillis();
+        List<PatientRecord> records = patient.getRecords(0, Long.MAX_VALUE);
+        
+        double lastSystolic = -1;
+        double lastSaturation = -1;
+        List<Double> spo2History = new ArrayList<>();
+
+        for (PatientRecord record: records){
+            String type = record.getRecordType();
+            double value = record.getMeasurementValue();
+
+            if(type.equals("SystolicBP")){
+                lastSystolic = value;
+                if (value > 180 || value < 90){
+                    triggerAlert(new Alert(String.valueOf(patient.getPatientID()), "urgent: systolic blood pressure out of range!! value: " + value, currentTime));
+                }
+            }
+            if(type.equals("DiastolicBP")){
+                if (value > 120 || value < 60){
+                    triggerAlert(new Alert(String.valueOf(patient.getPatientID()), "urgent: diastolic blood pressure out of range!! value: " + value, currentTime));
+                }
+            }
+            if (type.equals("Saturation")){
+                lastSaturation = value;
+                spo2History.add(value);
+                if(value < 92){
+                    triggerAlert(new Alert(String.valueOf(patient.getPatientID()), "urgent: saturation out of range!! value: " + value + "%", currentTime));
+                }
+            }
+            // hypotensive hypoxemia
+            if (lastSystolic != -1 && lastSaturation != -1){
+                if(lastSystolic < 90 && lastSaturation < 92){
+                    triggerAlert(new Alert(String.valueOf(patient.getPatientID()), " critical: hypotensive hypoxemia (BP: " + lastSystolic + ", spO2: " + lastSaturation + "%)", currentTime));
+                }
+            }
+        }
+        // rapid drop
+        if (spo2History.size() > 1) {
+        double currentSpO2 = spo2History.get(spo2History.size() - 1);
+        for (double prev : spo2History) {
+            if (prev - currentSpO2 >= 5.0) {
+                triggerAlert(new Alert(String.valueOf(patient.getPatientID()), "trend: rapid spO2 drop!", currentTime));
+                break;
+                }
+            }
+        }
+        
     }
 
     /**
@@ -47,6 +97,11 @@ public class AlertGenerator {
      * @param alert the alert object containing details about the alert condition
      */
     private void triggerAlert(Alert alert) {
-        // Implementation might involve logging the alert or notifying staff
+        System.out.println("========================================");
+        System.out.println("!!! MEDICAL ALERT TRIGGERED !!!");
+        System.out.println("Patient ID: " + alert.getPatientId());
+        System.out.println("Condition:  " + alert.getCondition());
+        System.out.println("Timestamp:  " + new java.util.Date(alert.getTimestamp()));
+        System.out.println("========================================");
     }
 }
