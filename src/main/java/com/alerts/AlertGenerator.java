@@ -45,6 +45,7 @@ public class AlertGenerator {
         double lastSystolic = -1;
         double lastSaturation = -1;
         List<Double> spo2History = new ArrayList<>();
+        List<Double> ecgHistory = new ArrayList<>();
 
         for (PatientRecord record: records){
             String type = record.getRecordType();
@@ -66,6 +67,31 @@ public class AlertGenerator {
                 spo2History.add(value);
                 if(value < 92){
                     triggerAlert(new Alert(String.valueOf(patient.getPatientID()), "urgent: saturation out of range!! value: " + value + "%", currentTime));
+                }
+            }
+            if (type.equals("ECG")) {
+                ecgHistory.add(value);
+                
+                // maintain sliding window (last 20 readings)
+                if (ecgHistory.size() > 20) {
+                    ecgHistory.remove(0);
+                }
+
+                // only evaluate if we have enough data for a meaningful average
+                if (ecgHistory.size() >= 10) {
+                    double sum = 0;
+                    for (double d : ecgHistory) sum += d;
+                    double average = sum / ecgHistory.size();
+
+                    if (value > 1.2) {
+                        triggerAlert(new Alert(String.valueOf(patient.getPatientID()), 
+                            "urgent: ECG peak detected!! value: " + value, currentTime));
+                    }
+
+                    if (Math.abs(value - average) > 0.5) {
+                        triggerAlert(new Alert(String.valueOf(patient.getPatientID()), 
+                            "critical: ECG abnormal peak far beyond average!! value: " + value, currentTime));
+                    }
                 }
             }
             // hypotensive hypoxemia

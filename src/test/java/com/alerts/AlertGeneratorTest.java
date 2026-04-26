@@ -80,6 +80,23 @@ public class AlertGeneratorTest {
 
         Patient patient = storage.getAllPatients().get(0);
         assertDoesNotThrow(() -> alertGenerator.evaluateData(patient));
-}
+    }
+
+    @Test
+    void testECGPeakAlert() {
+        DataStorage storage = new DataStorage();
+        AlertGenerator alertGenerator = new AlertGenerator(storage);
+        int patientId = 50;
+        long now = System.currentTimeMillis();
+
+        for (int i = 0; i < 15; i++) {
+            storage.addPatientData(patientId, 0.1, "ECG", now - (i * 1000));
+        }
+
+        storage.addPatientData(patientId, 1.5, "ECG", now);
+
+        Patient patient = storage.getAllPatients().get(0);
+        assertDoesNotThrow(() -> alertGenerator.evaluateData(patient));
+    }
     
 }
