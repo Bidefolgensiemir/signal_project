@@ -7,20 +7,32 @@ import java.util.Map;
 import com.alerts.AlertGenerator;
 
 /**
- * Manages storage and retrieval of patient data within a healthcare monitoring
- * system.
- * This class serves as a repository for all patient records, organized by
- * patient IDs.
+ * Manages storage and retrieval of patient data within a healthcare monitoring system.
+ * This class serves as a repository for all patient records, organized by patient IDs.
  */
 public class DataStorage {
+    
+    private static DataStorage instance;
+
     private Map<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
 
     /**
-     * Constructs a new instance of DataStorage, initializing the underlying storage
-     * structure.
+     * private constructor to prevent external instantiation.
      */
-    public DataStorage() {
+    private DataStorage() {
         this.patientMap = new HashMap<>();
+    }
+
+    /**
+     * Provides global access to the single instance of DataStorage.
+     *
+     * @return the singleton instance of DataStorage
+     */
+    public static synchronized DataStorage getInstance() {
+        if (instance == null) {
+            instance = new DataStorage();
+        }
+        return instance;
     }
 
     /**
@@ -55,8 +67,7 @@ public class DataStorage {
      *                  epoch
      * @param endTime   the end of the time range, in milliseconds since the Unix
      *                  epoch
-     * @return a list of PatientRecord objects that fall within the specified time
-     *         range
+     * @return a list of PatientRecord objects that fall within the specified time range
      */
     public List<PatientRecord> getRecords(int patientId, long startTime, long endTime) {
         Patient patient = patientMap.get(patientId);
@@ -83,15 +94,9 @@ public class DataStorage {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        // DataReader is not defined in this scope, should be initialized appropriately.
-        // DataReader reader = new SomeDataReaderImplementation("path/to/data");
-        DataStorage storage = new DataStorage();
+       
+        DataStorage storage = DataStorage.getInstance();
 
-        // Assuming the reader has been properly initialized and can read data into the
-        // storage
-        // reader.readData(storage);
-
-        // Example of using DataStorage to retrieve and print records for a patient
         List<PatientRecord> records = storage.getRecords(1, 1700000000000L, 1800000000000L);
         for (PatientRecord record : records) {
             System.out.println("Record for Patient ID: " + record.getPatientId() +
@@ -100,10 +105,10 @@ public class DataStorage {
                     ", Timestamp: " + record.getTimestamp());
         }
 
-        // Initialize the AlertGenerator with the storage
+
         AlertGenerator alertGenerator = new AlertGenerator(storage);
 
-        // Evaluate all patients' data to check for conditions that may trigger alerts
+        // evaluate all patients' data to check for conditions that may trigger alerts
         for (Patient patient : storage.getAllPatients()) {
             alertGenerator.evaluateData(patient);
         }

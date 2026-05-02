@@ -1,13 +1,23 @@
 We sucessfuly generated the jacoco report for the project,
-which you can find in javacocoAlerts.png and javacocoDataManegement.png
+which you can find in submitted png files.
 The jacoco report is located in the target/site/jacoco directory/index.html file.
 The jacoco report contains all parts of the code that needed to be implemented, 
 which is: 
-    - AlertGenerator class: 
-        - saturation alert
-        - bp alert
-        - hypotensive hypoxemia alert
-        - rapid drop of sp02 alert
-        - ecg alert 
+    - AlertFactory class: 
+        - HypotensiveHypoxemiaAlertFactory	
+        - BloodOxygenAlertFactory	
+        - ECGAlertFactory
+        - BloodPressureAlertFactory
+        - AlertFactory
     - Patient class 
     - dataReader class
+    - dataSorage class
+    - AlertStrategy interface:
+        - HypotensiveHypoxemiaAlertStrategy
+        - BloodOxygenAlertStrategy
+        - ECGAlertStrategy
+        - BloodPressureAlertStrategy   
+    - AlertDecorator class:
+        - PriorityAlertDecorator
+        - RepeatedAlertDecorator
+

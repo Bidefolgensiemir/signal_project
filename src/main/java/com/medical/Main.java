@@ -21,7 +21,7 @@ public class Main {
     }
 
     private static void startAlertSystem(){
-        DataStorage storage = new DataStorage();
+        DataStorage storage = DataStorage.getInstance();
         try {
             com.data_management.DataReader reader = new com.data_management.DataReaderFromFile("data/patient_data.csv");
             System.out.println("reading patient data...");

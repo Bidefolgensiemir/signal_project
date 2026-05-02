@@ -18,7 +18,7 @@ public class DataReaderTest {
             out.println("2, 80.0, HeartRate, 1714376789052");
         }
 
-        DataStorage storage = new DataStorage();
+        DataStorage storage = DataStorage.getInstance();
         DataReaderFromFile reader = new DataReaderFromFile(tempFile.getAbsolutePath());
         
         reader.readData(storage);
