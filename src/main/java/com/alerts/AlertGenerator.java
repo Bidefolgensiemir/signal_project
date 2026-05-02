@@ -3,6 +3,8 @@ package com.alerts;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alerts.alert_decorator.PriorityAlertDecorator;
+import com.alerts.alert_decorator.RepeatedAlertDecorator;
 import com.alerts.alert_strategies.AlertStrategy;
 import com.alerts.alert_strategies.BloodOxygenAlertStrategy;
 import com.alerts.alert_strategies.BloodPressureAlertStrategy;
@@ -57,9 +59,15 @@ public class AlertGenerator {
     public void evaluateData(Patient patient) {
         
         for (AlertStrategy alertStrategy : alertStrategies) {
-            BasicAlert triggeredAlerts = alertStrategy.checkAlert(patient);
+            Alert triggeredAlerts = alertStrategy.checkAlert(patient);
             
             if (triggeredAlerts != null) {
+                if (isHighPriority(triggeredAlerts)) {
+                    triggeredAlerts = new PriorityAlertDecorator(triggeredAlerts, 5);
+                }
+                if (isRepeatedAlert(triggeredAlerts)) {
+                    triggeredAlerts = new RepeatedAlertDecorator(triggeredAlerts);
+                }
                 triggerAlert(triggeredAlerts);
             }
         }   
@@ -74,7 +82,7 @@ public class AlertGenerator {
      *
      * @param alert the alert object containing details about the alert condition
      */
-    private void triggerAlert(BasicAlert alert) {
+    private void triggerAlert(Alert alert) {
         System.out.println("========================================");
         System.out.println("!!! MEDICAL ALERT TRIGGERED !!!");
         System.out.println("Patient ID: " + alert.getPatientID());
@@ -83,4 +91,15 @@ public class AlertGenerator {
         System.out.println("Timestamp:  " + new java.util.Date(alert.getTimestamp()));
         System.out.println("========================================");
     }
+
+    private boolean isHighPriority(Alert alert) {
+    return alert.getCondition().contains("Hypotensive Hypoxemia")
+        || alert.getCondition().contains("ECG abnormal");
+}
+
+    private boolean isRepeatedAlert(Alert alert) {
+  
+    return false;
+}
+
 }

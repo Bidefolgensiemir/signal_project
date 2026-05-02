@@ -20,8 +20,8 @@ public class RepeatedAlertDecorator implements Alert {
     }
 
     @Override
-    public String getPatientId() {
-        return decoratedAlert.getPatientId();
+    public int getPatientID() {
+        return decoratedAlert.getPatientID();
     }
 
     @Override
