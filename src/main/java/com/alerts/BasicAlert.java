@@ -2,17 +2,17 @@ package com.alerts;
 
 // Represents an alert
 public class BasicAlert {
-    private String patientId;
+    private int patientId;
     private String condition;
     private long timestamp;
 
-    public BasicAlert(String patientId, String condition, long timestamp) {
+    public BasicAlert(int patientId, String condition, long timestamp) {
         this.patientId = patientId;
         this.condition = condition;
         this.timestamp = timestamp;
     }
 
-    public String getPatientId() {
+    public int getPatientID() {
         return patientId;
     }
 

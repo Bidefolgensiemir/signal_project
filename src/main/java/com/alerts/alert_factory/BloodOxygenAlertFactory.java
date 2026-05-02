@@ -5,7 +5,7 @@ import com.alerts.BloodOxygenAlert;
 
 public class BloodOxygenAlertFactory extends AlertFactory {
     @Override
-    public BasicAlert createAlert(String patientId, String condition, long timeStamp) {
+    public  BasicAlert createAlert(int patientId, String condition, long timeStamp) {
         return new BloodOxygenAlert(patientId, condition, timeStamp);
     }
 
