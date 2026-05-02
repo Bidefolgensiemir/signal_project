@@ -1,5 +1,9 @@
 package com.data_management;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Test;
 
 import com.data_management.DataReaderFromFile;
@@ -10,18 +14,17 @@ public class DataReaderTest {
 
     @Test
     void testReadDataFromFile() throws java.io.IOException {
-        // Create a temporary file for testing
-        java.io.File tempFile = java.io.File.createTempFile("test_data", ".txt");
-        try (java.io.PrintWriter out = new java.io.PrintWriter(tempFile)) {
-            out.println("1, 100.0, ECG, 1714376789050");
-            out.println("1, 120.0, BloodPressure, 1714376789051");
-            out.println("2, 80.0, HeartRate, 1714376789052");
-        }
+        String testData = String.join(System.lineSeparator(),
+                "1, 100.0, ECG, 1714376789050",
+                "1, 120.0, BloodPressure, 1714376789051",
+                "2, 80.0, HeartRate, 1714376789052");
 
         DataStorage storage = DataStorage.getInstance();
-        DataReaderFromFile reader = new DataReaderFromFile(tempFile.getAbsolutePath());
+        DataReaderFromFile reader = new DataReaderFromFile();
         
-        reader.readData(storage);
+        try (InputStream inputStream = new ByteArrayInputStream(testData.getBytes(StandardCharsets.UTF_8))) {
+            reader.readData(inputStream, storage);
+        }
 
         java.util.List<PatientRecord> records = storage.getRecords(1, 1714376789050L, 1714376789051L);
         org.junit.jupiter.api.Assertions.assertEquals(2, records.size());
