@@ -9,9 +9,13 @@ which is:
         - ECGAlertFactory
         - BloodPressureAlertFactory
         - AlertFactory
-    - Patient class 
-    - dataReader class
-    - dataSorage class
+    -  DataManagement class
+        - Patient class 
+        - DataReaderFromWebSocket class
+        - DataReaderFromFile class
+        - DataStorage class
+        - WebSocketClient class
+        - PatientRecord class
     - AlertStrategy interface:
         - HypotensiveHypoxemiaAlertStrategy
         - BloodOxygenAlertStrategy
@@ -20,4 +24,11 @@ which is:
     - AlertDecorator class:
         - PriorityAlertDecorator
         - RepeatedAlertDecorator
+    - Alerts folder: 
+        - HypotensiveHypoxemiaAlert class
+        - BloodOxygenAlert class
+        - ECGAlert class
+        - BloodPressureAlert class
+        - BasicAlert class
+        - AlertGenerator class
 

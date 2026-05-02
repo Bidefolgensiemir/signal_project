@@ -17,7 +17,10 @@ public class Main {
 
         DataStorage storage = DataStorage.getInstance();
         AlertGenerator alertGenerator = new AlertGenerator(storage);
+
         String serverUri = "ws://localhost:8080";
+        System.out.println("Connecting to medical data stream at: " + serverUri);
+
         WebSocketClient client = new WebSocketClient(serverUri);
         System.out.println("Real-time monitoring system started...");
 
@@ -28,8 +31,11 @@ public class Main {
                 // frequency of analysis (every 2 seconds)
                 Thread.sleep(2000); 
             } catch (InterruptedException e) {
-                System.err.println("Monitoring loop interrupted: " + e.getMessage());
+                System.err.println("Monitoring loop interrupted. Shutting down... ");
+                client.disconnect();
                 break;
+            } catch (Exception e) {
+                System.err.println("An error occurred during alert generation: " + e.getMessage());
             }
         }
     }
