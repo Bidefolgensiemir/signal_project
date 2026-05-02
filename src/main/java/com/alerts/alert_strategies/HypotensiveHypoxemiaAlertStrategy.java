@@ -2,11 +2,16 @@ package com.alerts.alert_strategies;
 
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
+import com.alerts.alert_factory.HypotensiveHypoxemiaAlertFactory;
 import java.util.List;
+import com.alerts.alert_factory.AlertFactory;
+import com.alerts.BasicAlert;
 
 public class HypotensiveHypoxemiaAlertStrategy implements AlertStrategy {
+    private final AlertFactory alertFactory = new HypotensiveHypoxemiaAlertFactory();
+
     @Override
-    public String checkAlert(Patient patient) {
+    public BasicAlert checkAlert(Patient patient) {
         List<PatientRecord> records = patient.getRecords(0, Long.MAX_VALUE);
         
         boolean hasHypoxemia = false;
@@ -15,6 +20,8 @@ public class HypotensiveHypoxemiaAlertStrategy implements AlertStrategy {
         for (PatientRecord record : records) {
             String type = record.getRecordType();
             double value = record.getMeasurementValue();
+            long timeStamp = record.getTimestamp();
+
 
             // check for hypoxemia: oxygen saturation < 92%
             if (type.equals("saturation") && value < 92.0) {
@@ -27,7 +34,7 @@ public class HypotensiveHypoxemiaAlertStrategy implements AlertStrategy {
             }
 
             if (hasHypoxemia && hasHypotension) {
-                return "CRITICAL: hypotensive hypoxemia detected! (low oxygen + low bp)";
+                return alertFactory.createAlert(patient.getPatientID(), "Hypotensive Hypoxemia", timeStamp);
             }
         }
         return null;

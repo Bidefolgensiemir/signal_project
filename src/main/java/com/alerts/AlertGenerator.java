@@ -3,9 +3,15 @@ package com.alerts;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alerts.alert_strategies.AlertStrategy;
+import com.alerts.alert_strategies.BloodOxygenAlertStrategy;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
-import com.data_management.PatientRecord;
+import com.alerts.alert_strategies.BloodPressureAlertStrategy;
+import com.alerts.alert_strategies.BloodOxygenStrategy;
+import com.alerts.alert_strategies.ECGAlertStrategy;
+import com.alerts.alert_strategies.HypotensiveHypoxemiaAlertStrategy;
+import com.apple.laf.AquaKeyBindings;
 
 /**
  * The {@code AlertGenerator} class is responsible for monitoring patient data
@@ -15,6 +21,9 @@ import com.data_management.PatientRecord;
  */
 public class AlertGenerator {
     private DataStorage dataStorage;
+
+    List<AlertStrategy> alertStrategies = new ArrayList<>();
+    
 
     /**
      * Constructs an {@code AlertGenerator} with a specified {@code DataStorage}.
@@ -26,6 +35,15 @@ public class AlertGenerator {
      */
     public AlertGenerator(DataStorage dataStorage) {
         this.dataStorage = dataStorage;
+        this.alertStrategies = new ArrayList<>();
+    
+
+        alertStrategies.add(new BloodPressureAlertStrategy());
+        alertStrategies.add(new BloodOxygenAlertStrategy());
+        alertStrategies.add(new ECGAlertStrategy());
+        alertStrategies.add(new HypotensiveHypoxemiaAlertStrategy());
+
+
     }
 
     /**
@@ -40,21 +58,14 @@ public class AlertGenerator {
      */
     public void evaluateData(Patient patient) {
         
-            // FIXED: Added space before opening brace 
-            // hypotensive hypoxemia
-            if (lastSystolic != -1 && lastSaturation != -1) {
-                // FIXED: Added space after 'if' keyword 
-                if (lastSystolic < 90 && lastSaturation < 92) {
-                    // FIXED: Split long line into multiple lines (line length < 100 chars)
-                    triggerAlert(
-                        new Alert(
-                            String.valueOf(patient.getPatientID()),
-                            " critical: hypotensive hypoxemia (BP: " + lastSystolic
-                                + ", spO2: " + lastSaturation + "%)",
-                            currentTime));
-                }
+        for (AlertStrategy alertStrategy : alertStrategies) {
+            List<Alert> triggeredAlerts = alertStrategy.checkAlert(patient);
+            
+            for (Alert alert : triggeredAlerts){
+                triggerAlert(alert);
             }
-        }
+        }   
+    }
 
 
     /**

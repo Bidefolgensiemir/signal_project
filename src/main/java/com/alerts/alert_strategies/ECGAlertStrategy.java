@@ -3,19 +3,26 @@ package com.alerts.alert_strategies;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alerts.BasicAlert;
+import com.alerts.alert_factory.AlertFactory;
+import com.alerts.alert_factory.ECGAlertFactory;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
 
 
 public class ECGAlertStrategy implements AlertStrategy{
-    @Override 
-    public String checkAlert(Patient patient){
+    private final AlertFactory alertFactory = new ECGAlertFactory();
+
+    @Override
+    public BasicAlert checkAlert(Patient patient){
         List<PatientRecord> records = patient.getRecords(0, Long.MAX_VALUE);
          List<Double> ecgHistory = new ArrayList<>();
 
         for (PatientRecord record : records) {
             String type = record.getRecordType();
             double value = record.getMeasurementValue();
+            long timeStamp = record.getTimestamp();
+
 
             if (type.equals("ECG")) {
                 ecgHistory.add(value);
@@ -34,11 +41,11 @@ public class ECGAlertStrategy implements AlertStrategy{
                     double average = sum / ecgHistory.size();
 
                     if (value > 1.2) {
-                        return "urgent: ECG peak detected!! value: " + value;
+                        return alertFactory.createAlert(patient.getPatientID(), "ECG abnormal peak", timeStamp);
                     }
 
                     if (Math.abs(value - average) > 0.5) {
-                        return "critical: ECG abnormal peak far beyond average!! value: " + value;
+                        return alertFactory.createAlert(patient.getPatientID(), "ECG abnormal deviation", timeStamp);
                     }
                 }
             }
