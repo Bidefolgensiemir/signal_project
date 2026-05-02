@@ -6,8 +6,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Reads patient data messages received from the WebSocket simulator.
+ * Expected message format is {@code patientId,timestamp,label,data}, where
+ * {@code data} must be a numeric measurement value.
+ */
 public class DataReaderFromWebSocket implements DataReader {
 
+    /**
+     * Reads one or more WebSocket-formatted CSV lines from the provided stream
+     * and stores valid measurements in {@link DataStorage}.
+     *
+     * @param inputStream stream containing WebSocket message text
+     * @param dataStorage storage where parsed records are written
+     * @throws IOException if the stream cannot be read
+     */
     @Override
     public void readData(InputStream inputStream, DataStorage dataStorage) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
@@ -17,7 +30,13 @@ public class DataReaderFromWebSocket implements DataReader {
             }
         }
     }
-
+    
+    /**
+     * Parses and stores a single WebSocket CSV line.
+     *
+     * @param line line in {@code patientId,timestamp,label,data} format
+     * @param dataStorage storage where parsed records are written
+     */
     private void readLine(String line, DataStorage dataStorage) {
         String[] parts = line.split(",");
         if (parts.length != 4) {

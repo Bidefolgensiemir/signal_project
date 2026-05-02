@@ -11,6 +11,12 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+/**
+ * WebSocket client used to receive live patient data from the simulator.
+ * Incoming text frames are buffered until a complete message is received, then
+ * passed to a {@link DataReader} so parsing stays outside server logic.
+ */
 public class WebSocketClient implements WebSocket.Listener {
     private WebSocket webSocket;
     private final String serverUri;
@@ -28,7 +34,11 @@ public class WebSocketClient implements WebSocket.Listener {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     
-
+    /**
+     * Creates a client for the given server URI and connects immediately.
+     *
+     * @param serverUri WebSocket server URI, for example {@code ws://localhost:8080}
+     */
     public WebSocketClient(String serverUri) {
         this(serverUri, DataStorage.getInstance(), new DataReaderFromWebSocket(), true);
     }
@@ -41,6 +51,16 @@ public class WebSocketClient implements WebSocket.Listener {
         this(serverUri, dataStorage, new DataReaderFromWebSocket(), autoConnect);
     }
 
+    /**
+     * Creates a configurable client instance.
+     * Package-private so tests can inject storage/readers and skip network
+     * connection setup.
+     *
+     * @param serverUri WebSocket server URI
+     * @param dataStorage storage where received patient data is written
+     * @param dataReader reader responsible for parsing completed messages
+     * @param autoConnect whether the constructor should immediately connect
+     */
     WebSocketClient(String serverUri, DataStorage dataStorage, DataReader dataReader, boolean autoConnect) {
         this.serverUri = serverUri;
         this.dataStorage = dataStorage;
@@ -51,6 +71,10 @@ public class WebSocketClient implements WebSocket.Listener {
     }
 
 
+    /**
+     * Opens the WebSocket connection unless a connection attempt is already in
+     * progress. Failed attempts are followed by a scheduled reconnect.
+     */
     public void connect(){
         if(isConnecting){
             return;
@@ -71,6 +95,9 @@ public class WebSocketClient implements WebSocket.Listener {
     }
 
 
+    /**
+     * Schedules a reconnect attempt until the maximum retry count is reached.
+     */
     private void scheduleReconnect() {
     if (retryCount >= MAX_RETRIES){
         System.err.println("Max reconnection attempts reached. Giving up.");
@@ -84,6 +111,9 @@ public class WebSocketClient implements WebSocket.Listener {
         scheduler.schedule(this::connect, RETRY_DELAY_MS, TimeUnit.MILLISECONDS);
     } 
 
+    /**
+     * Closes the active WebSocket connection if one exists.
+     */
     public void disconnect() {
         if (this.webSocket != null) {
             // 1000 is the standard status code for a normal closure
@@ -91,6 +121,16 @@ public class WebSocketClient implements WebSocket.Listener {
         }
     }
 
+    /**
+     * Receives text data from the WebSocket.
+     * Partial frames are appended to a buffer and only processed when
+     * {@code last} is true.
+     *
+     * @param webSocket WebSocket that delivered the message
+     * @param data text frame payload
+     * @param last whether this frame completes the logical message
+     * @return {@code null}, because processing is performed synchronously
+     */
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
         messageBuffer.append(data);
@@ -108,6 +148,11 @@ public class WebSocketClient implements WebSocket.Listener {
         return null;
     }
 
+    /**
+     * Delegates a completed WebSocket message to the configured data reader.
+     *
+     * @param message complete text message received from the WebSocket
+     */
     private void readMessage(String message) {
         try (InputStream inputStream = new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8))) {
             dataReader.readData(inputStream, dataStorage);
@@ -115,6 +160,12 @@ public class WebSocketClient implements WebSocket.Listener {
             System.err.println("Could not read WebSocket message: " + e.getMessage());
         }
     }
+
+    /**
+     * Handles successful WebSocket opening by resetting connection state.
+     *
+     * @param webSocket opened WebSocket connection
+     */
     @Override
     public void onOpen(WebSocket webSocket) {
        System.out.println("Connected to the server successfully!");
@@ -123,6 +174,13 @@ public class WebSocketClient implements WebSocket.Listener {
         retryCount = 0;
     }
 
+    /**
+     * Handles WebSocket errors by clearing connection state and scheduling a
+     * reconnect attempt.
+     *
+     * @param webSocket WebSocket where the error occurred
+     * @param error error reported by the WebSocket API
+     */
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
        System.out.println("An error occurred: " + error.getMessage());
@@ -133,6 +191,14 @@ public class WebSocketClient implements WebSocket.Listener {
         scheduleReconnect();
     }
 
+    /**
+     * Handles WebSocket closure and schedules reconnection.
+     *
+     * @param webSocket closed WebSocket
+     * @param statusCode close status code
+     * @param reason close reason
+     * @return {@code null}, because close handling is synchronous
+     */
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
     System.out.println("System closed"+statusCode+"Reason"+reason);
