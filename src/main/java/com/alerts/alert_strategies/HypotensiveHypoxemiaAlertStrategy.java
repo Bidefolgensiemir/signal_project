@@ -22,12 +22,12 @@ public class HypotensiveHypoxemiaAlertStrategy implements AlertStrategy {
             }
 
             // check for hypotension: systolic blood pressure < 90 mmHg
-            if (type.equals("SystolicBP") && value < 90.0) {
+            if (type.equals("systolicBP") && value < 90.0) {
                 hasHypotension = true;
             }
 
             if (hasHypoxemia && hasHypotension) {
-                return "CRITICAL: Hypotensive Hypoxemia detected! (Low Oxygen + Low BP)";
+                return "CRITICAL: hypotensive hypoxemia detected! (low oxygen + low bp)";
             }
         }
         return null;
