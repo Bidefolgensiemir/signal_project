@@ -1,8 +1,11 @@
-package com.alerts;
+package com.alerts.alert_factory;
 
-public class ECGAlertFactory extends AlertFactory {
-   @Override
+import com.alerts.Alert;
+
+public class BloodPressureAlertFactory extends AlertFactory {
+    @Override
     public Alert createAlert(String patientId, String condition, long timeStamp) {
         return new Alert(patientId, condition, timeStamp);
     }
+
 }

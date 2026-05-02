@@ -1,4 +1,6 @@
-package com.alerts;
+package com.alerts.alert_factory;
+
+import com.alerts.Alert;
 
 public class BloodOxygenAlertFactory extends AlertFactory {
     @Override
