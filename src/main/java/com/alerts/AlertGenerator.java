@@ -114,9 +114,9 @@ public class AlertGenerator {
                     }
                 }
             }
-            // FIXED: Added space before opening brace (Google Style Guide)
+            // FIXED: Added space before opening brace 
             if (lastSystolic != -1 && lastSaturation != -1) {
-                // FIXED: Added space after 'if' keyword (Google Style Guide)
+                // FIXED: Added space after 'if' keyword 
                 if (lastSystolic < 90 && lastSaturation < 92) {
                     // FIXED: Split long line into multiple lines (line length < 100 chars)
                     triggerAlert(
@@ -128,7 +128,7 @@ public class AlertGenerator {
                 }
             }
         }
-        // FIXED: Corrected indentation for rapid drop block (Google Style Guide)
+        // FIXED: Corrected indentation for rapid drop block 
         // rapid drop
         if (spo2History.size() > 1) {
             double currentSpO2 = spo2History.get(spo2History.size() - 1);
@@ -160,7 +160,7 @@ public class AlertGenerator {
         System.out.println("!!! MEDICAL ALERT TRIGGERED !!!");
         System.out.println("Patient ID: " + alert.getPatientId());
         System.out.println("Condition:  " + alert.getCondition());
-        // FIXED: Moved Date instantiation to same line (Google Style Guide - avoid unnecessary wrapping)
+        // FIXED: Moved Date instantiation to same line 
         System.out.println("Timestamp:  " + new java.util.Date(alert.getTimestamp()));
         System.out.println("========================================");
     }
