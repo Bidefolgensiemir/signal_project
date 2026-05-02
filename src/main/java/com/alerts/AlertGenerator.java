@@ -5,13 +5,11 @@ import java.util.List;
 
 import com.alerts.alert_strategies.AlertStrategy;
 import com.alerts.alert_strategies.BloodOxygenAlertStrategy;
-import com.data_management.DataStorage;
-import com.data_management.Patient;
 import com.alerts.alert_strategies.BloodPressureAlertStrategy;
-import com.alerts.alert_strategies.BloodOxygenStrategy;
 import com.alerts.alert_strategies.ECGAlertStrategy;
 import com.alerts.alert_strategies.HypotensiveHypoxemiaAlertStrategy;
-import com.apple.laf.AquaKeyBindings;
+import com.data_management.DataStorage;
+import com.data_management.Patient;
 
 /**
  * The {@code AlertGenerator} class is responsible for monitoring patient data
@@ -59,10 +57,10 @@ public class AlertGenerator {
     public void evaluateData(Patient patient) {
         
         for (AlertStrategy alertStrategy : alertStrategies) {
-            List<Alert> triggeredAlerts = alertStrategy.checkAlert(patient);
+            BasicAlert triggeredAlerts = alertStrategy.checkAlert(patient);
             
-            for (Alert alert : triggeredAlerts){
-                triggerAlert(alert);
+            if (triggeredAlerts != null) {
+                triggerAlert(triggeredAlerts);
             }
         }   
     }
@@ -76,10 +74,10 @@ public class AlertGenerator {
      *
      * @param alert the alert object containing details about the alert condition
      */
-    private void triggerAlert(Alert alert) {
+    private void triggerAlert(BasicAlert alert) {
         System.out.println("========================================");
         System.out.println("!!! MEDICAL ALERT TRIGGERED !!!");
-        System.out.println("Patient ID: " + alert.getPatientId());
+        System.out.println("Patient ID: " + alert.getPatientID());
         System.out.println("Condition:  " + alert.getCondition());
         // FIXED: Moved Date instantiation to same line 
         System.out.println("Timestamp:  " + new java.util.Date(alert.getTimestamp()));
