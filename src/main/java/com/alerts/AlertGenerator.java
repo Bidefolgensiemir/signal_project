@@ -21,9 +21,8 @@ import com.data_management.Patient;
  */
 public class AlertGenerator {
     private DataStorage dataStorage;
+    private List<AlertStrategy> alertStrategies;
 
-    List<AlertStrategy> alertStrategies = new ArrayList<>();
-    
 
     /**
      * Constructs an {@code AlertGenerator} with a specified {@code DataStorage}.
@@ -44,6 +43,15 @@ public class AlertGenerator {
         alertStrategies.add(new HypotensiveHypoxemiaAlertStrategy());
 
 
+    }
+    /**
+     * cooridnates evaluation of all patients currently in storage
+     */
+    public void generate(){
+        List<Patient> patients = dataStorage.getAllPatients();
+        for (Patient patient : patients){
+            evaluateData(patient);
+        }
     }
 
     /**

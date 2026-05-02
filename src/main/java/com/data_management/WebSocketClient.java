@@ -33,7 +33,7 @@ public class WebSocketClient implements WebSocket.Listener {
         this(serverUri, DataStorage.getInstance(), new DataReaderFromWebSocket(), true);
     }
 
-    WebSocketClient(String serverUri, boolean autoConnect) {
+    public WebSocketClient(String serverUri, boolean autoConnect) {
         this(serverUri, DataStorage.getInstance(), new DataReaderFromWebSocket(), autoConnect);
     }
 

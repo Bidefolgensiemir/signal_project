@@ -1,7 +1,9 @@
 package com.data_management;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Represents a patient and manages their medical records.
@@ -11,7 +13,7 @@ import java.util.List;
  */
 public class Patient {
     private int patientId;
-    private List<PatientRecord> patientRecords;
+    private final List<PatientRecord> patientRecords;
 
     /**
      * Constructs a new Patient with a specified ID.
@@ -21,7 +23,7 @@ public class Patient {
      */
     public Patient(int patientId) {
         this.patientId = patientId;
-        this.patientRecords = new ArrayList<>();
+        this.patientRecords = Collections.synchronizedList(new ArrayList<>());
     }
 
     /**
@@ -53,9 +55,11 @@ public class Patient {
      */
     public List<PatientRecord> getRecords(long startTime, long endTime) {
         List<PatientRecord> filteredRecords  = new ArrayList<>();
-        for (PatientRecord record : this.patientRecords) {
-            if (record.getTimestamp() >= startTime && record.getTimestamp() <= endTime) {
-                filteredRecords.add(record);
+        synchronized (this.patientRecords) {
+            for (PatientRecord record : this.patientRecords) {
+                if (record.getTimestamp() >= startTime && record.getTimestamp() <= endTime) {
+                    filteredRecords.add(record);
+                }
             }
         }
         return filteredRecords;

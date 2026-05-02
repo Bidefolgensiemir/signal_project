@@ -2,6 +2,7 @@ package com.data_management;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.lang.reflect.Proxy;
 import java.net.http.WebSocket;
@@ -52,6 +53,26 @@ public class WebSocketClientTest {
         assertEquals(1, records.size());
         assertEquals(0.25, records.get(0).getMeasurementValue());
         assertEquals("ECG", records.get(0).getRecordType());
+    }
+
+    @Test
+    void onErrorTriggersReconnectWithoutCrashing() {
+        WebSocketClient client = new WebSocketClient("ws://localhost:8080", false);
+        WebSocket webSocket = createFakeWebSocket(new AtomicLong(0));
+        
+        assertDoesNotThrow(() -> {
+            client.onError(webSocket, new RuntimeException("Simulated network connection dropped"));
+        }, "Client should handle the error and schedule a reconnect without throwing exceptions");
+    }
+
+    @Test
+    void onCloseTriggersReconnectWithoutCrashing() {
+        WebSocketClient client = new WebSocketClient("ws://localhost:8080", false);
+        WebSocket webSocket = createFakeWebSocket(new AtomicLong(0));
+        
+        assertDoesNotThrow(() -> {
+            client.onClose(webSocket, 1006, "Abnormal closure from server");
+        }, "Client should handle server closures and schedule a reconnect without throwing exceptions");
     }
 
     private WebSocket createFakeWebSocket(AtomicLong requestedMessages) {

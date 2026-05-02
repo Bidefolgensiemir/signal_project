@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.alerts.AlertGenerator;
 
 /**
@@ -12,15 +14,15 @@ import com.alerts.AlertGenerator;
  */
 public class DataStorage {
     
-    private static DataStorage instance;
+    private static volatile DataStorage instance;
 
-    private Map<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
+    private ConcurrentHashMap<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
 
     /**
      * private constructor to prevent external instantiation.
      */
     private DataStorage() {
-        this.patientMap = new HashMap<>();
+        this.patientMap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -28,9 +30,13 @@ public class DataStorage {
      *
      * @return the singleton instance of DataStorage
      */
-    public static synchronized DataStorage getInstance() {
+    public static DataStorage getInstance() {
         if (instance == null) {
-            instance = new DataStorage();
+            synchronized (DataStorage.class) {
+                if (instance == null) {
+                    instance = new DataStorage();
+                }
+            }
         }
         return instance;
     }
@@ -49,11 +55,7 @@ public class DataStorage {
      *                         milliseconds since the Unix epoch
      */
     public void addPatientData(int patientId, double measurementValue, String recordType, long timestamp) {
-        Patient patient = patientMap.get(patientId);
-        if (patient == null) {
-            patient = new Patient(patientId);
-            patientMap.put(patientId, patient);
-        }
+        Patient patient = patientMap.computeIfAbsent(patientId, Patient:: new);
         patient.addRecord(measurementValue, recordType, timestamp);
     }
 
@@ -71,10 +73,7 @@ public class DataStorage {
      */
     public List<PatientRecord> getRecords(int patientId, long startTime, long endTime) {
         Patient patient = patientMap.get(patientId);
-        if (patient != null) {
-            return patient.getRecords(startTime, endTime);
-        }
-        return new ArrayList<>(); // return an empty list if no patient is found
+        return (patient != null) ? patient.getRecords(startTime, endTime) : new ArrayList<>();
     }
 
     /**
@@ -112,5 +111,9 @@ public class DataStorage {
         for (Patient patient : storage.getAllPatients()) {
             alertGenerator.evaluateData(patient);
         }
+    }
+    // testing purposes
+    public void reset() {
+        this.patientMap.clear();
     }
 }
