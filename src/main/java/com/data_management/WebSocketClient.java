@@ -1,8 +1,12 @@
 package com.data_management;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,6 +14,9 @@ import java.util.concurrent.TimeUnit;
 public class WebSocketClient implements WebSocket.Listener {
     private WebSocket webSocket;
     private final String serverUri;
+    private final DataStorage dataStorage;
+    private final DataReader dataReader;
+    private final StringBuilder messageBuffer = new StringBuilder();
 
 
     //Reconnection Variables
@@ -23,11 +30,21 @@ public class WebSocketClient implements WebSocket.Listener {
     
 
     public WebSocketClient(String serverUri) {
-        this(serverUri, true);
+        this(serverUri, DataStorage.getInstance(), new DataReaderFromWebSocket(), true);
     }
 
     WebSocketClient(String serverUri, boolean autoConnect) {
+        this(serverUri, DataStorage.getInstance(), new DataReaderFromWebSocket(), autoConnect);
+    }
+
+    WebSocketClient(String serverUri, DataStorage dataStorage, boolean autoConnect) {
+        this(serverUri, dataStorage, new DataReaderFromWebSocket(), autoConnect);
+    }
+
+    WebSocketClient(String serverUri, DataStorage dataStorage, DataReader dataReader, boolean autoConnect) {
         this.serverUri = serverUri;
+        this.dataStorage = dataStorage;
+        this.dataReader = dataReader;
         if (autoConnect) {
             connect();
         }
@@ -76,11 +93,27 @@ public class WebSocketClient implements WebSocket.Listener {
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-        System.out.println("Received message: " + data);
+        messageBuffer.append(data);
+
+        if (last) {
+            String message = messageBuffer.toString();
+            messageBuffer.setLength(0);
+
+            System.out.println("Received message: " + message);
+            readMessage(message);
+        }
         
         webSocket.request(1);
 
         return null;
+    }
+
+    private void readMessage(String message) {
+        try (InputStream inputStream = new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8))) {
+            dataReader.readData(inputStream, dataStorage);
+        } catch (IOException e) {
+            System.err.println("Could not read WebSocket message: " + e.getMessage());
+        }
     }
     @Override
     public void onOpen(WebSocket webSocket) {
@@ -111,5 +144,3 @@ public class WebSocketClient implements WebSocket.Listener {
 
 
 }
-
-

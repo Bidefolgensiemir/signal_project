@@ -17,6 +17,7 @@ public class DataReaderFromFile implements DataReader {
         this.filePath = filePath;
     }
 
+    
     @Override
     public void readData(InputStream inputStream, DataStorage dataStorage) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
