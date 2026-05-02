@@ -39,82 +39,9 @@ public class AlertGenerator {
      * @param patient the patient data to evaluate for alert conditions
      */
     public void evaluateData(Patient patient) {
-        long currentTime = System.currentTimeMillis();
-        List<PatientRecord> records = patient.getRecords(0, Long.MAX_VALUE);
-
-        double lastSystolic = -1;
-        double lastSaturation = -1;
-        List<Double> spo2History = new ArrayList<>();
-        List<Double> ecgHistory = new ArrayList<>();
-
-        for (PatientRecord record : records) {
-            String type = record.getRecordType();
-            double value = record.getMeasurementValue();
-
-            if (type.equals("SystolicBP")) {
-                lastSystolic = value;
-                if (value > 180 || value < 90) {
-                    triggerAlert(
-                        new Alert(
-                            String.valueOf(patient.getPatientID()),
-                            "urgent: systolic blood pressure out of range!! value: " + value,
-                            currentTime));
-                }
-            }
-            if (type.equals("DiastolicBP")) {
-                if (value > 120 || value < 60) {
-                    triggerAlert(
-                        new Alert(
-                            String.valueOf(patient.getPatientID()),
-                            "urgent: diastolic blood pressure out of range!! value: " + value,
-                            currentTime));
-                }
-            }
-            if (type.equals("Saturation")) {
-                lastSaturation = value;
-                spo2History.add(value);
-                if (value < 92) {
-                    triggerAlert(
-                        new Alert(
-                            String.valueOf(patient.getPatientID()),
-                            "urgent: saturation out of range!! value: " + value + "%",
-                            currentTime));
-                }
-            }
-            if (type.equals("ECG")) {
-                ecgHistory.add(value);
-
-                // maintain sliding window (last 20 readings)
-                if (ecgHistory.size() > 20) {
-                    ecgHistory.remove(0);
-                }
-
-                // only evaluate if we have enough data for a meaningful average
-                if (ecgHistory.size() >= 10) {
-                    double sum = 0;
-                    for (double d : ecgHistory) {
-                        sum += d;
-                    }
-                    double average = sum / ecgHistory.size();
-
-                    if (value > 1.2) {
-                        triggerAlert(
-                            new Alert(
-                                String.valueOf(patient.getPatientID()),
-                                "urgent: ECG peak detected!! value: " + value,
-                                currentTime));
-                    }
-
-                    if (Math.abs(value - average) > 0.5) {
-                        triggerAlert(
-                            new Alert(
-                                String.valueOf(patient.getPatientID()),
-                                "critical: ECG abnormal peak far beyond average!! value: " + value,
-                                currentTime));
-                    }
-                }
-            }
+        
             // FIXED: Added space before opening brace 
+            // hypotensive hypoxemia
             if (lastSystolic != -1 && lastSaturation != -1) {
                 // FIXED: Added space after 'if' keyword 
                 if (lastSystolic < 90 && lastSaturation < 92) {
@@ -128,24 +55,7 @@ public class AlertGenerator {
                 }
             }
         }
-        // FIXED: Corrected indentation for rapid drop block 
-        // rapid drop
-        if (spo2History.size() > 1) {
-            double currentSpO2 = spo2History.get(spo2History.size() - 1);
-            for (double prev : spo2History) {
-                if (prev - currentSpO2 >= 5.0) {
-                    // FIXED: Split long line into multiple lines (line length < 100 chars)
-                    triggerAlert(
-                        new Alert(
-                            String.valueOf(patient.getPatientID()),
-                            "trend: rapid spO2 drop!",
-                            currentTime));
-                    break;
-                }
-            }
-        }
-        
-    }
+
 
     /**
      * Triggers an alert for the monitoring system. This method can be extended to
